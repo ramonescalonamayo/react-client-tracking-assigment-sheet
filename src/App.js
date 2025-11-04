@@ -33,6 +33,9 @@ function App() {
       status: "Not Started",
       assignment: "Annual Review Plan",
       appSigned: "Yes",
+      dateSigned: "2025/11/14",
+      iepSigned: "Yes",
+      iepDateSigned:"2025/11/14"
     },
     {
       id: 2,
@@ -42,6 +45,9 @@ function App() {
       status: "Completed",
       assignment: "Triennial",
       appSigned: "No",
+      dateSigned: "2025/11/14",
+      iepSigned: "Yes",
+      iepDateSigned:"2025/11/14"
     },
     {
       id: 3,
@@ -51,6 +57,9 @@ function App() {
       status: "Not Started",
       assignment: "Assesment",
       appSigned: "No",
+      dateSigned: "2025/11/14",
+      iepSigned: "Yes",
+      iepDateSigned:"2025/11/14"
     },
     {
       id: 4,
@@ -60,6 +69,9 @@ function App() {
       status: "Not Started",
       assignment: "Assesment",
       appSigned: "No",
+      dateSigned: "2025/11/14",
+      iepSigned: "Yes",
+      iepDateSigned:"2025/11/14"
     },
   ]);
 
@@ -159,6 +171,9 @@ function App() {
               <TableCell><h3>Status</h3></TableCell>
               <TableCell><h3>Assignment</h3></TableCell>
               <TableCell><h3>App Signed</h3></TableCell>
+              <TableCell><h3>Date Signed</h3></TableCell>
+              <TableCell><h3>IEP Signed</h3></TableCell>
+              <TableCell><h3>Date Signed</h3></TableCell>
               <TableCell><h3>Edit</h3></TableCell>
               <TableCell><h3>Delete</h3></TableCell>
             </TableRow>
@@ -184,6 +199,9 @@ function App() {
                 </TableCell>
                 <TableCell>{row.assignment}</TableCell>
                 <TableCell>{row.appSigned}</TableCell>
+                <TableCell>{row.dateSigned}</TableCell>
+                <TableCell>{row.iepSigned}</TableCell>
+                <TableCell>{row.iepDateSigned}</TableCell>
                 <TableCell>
                   <IconButton color="primary" onClick={() => handleOpen(row)}>
                     <Edit />
@@ -206,7 +224,7 @@ function App() {
       {/* Dialogo para añadir/editar */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
-          {editRow ? "Editar Elemento" : "Añadir Nuevo Elemento"}
+          {editRow ? "Edit Assigment" : "Add New Assigment"}
         </DialogTitle>
         <DialogContent
           style={{
@@ -260,9 +278,9 @@ function App() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button variant="contained" color="primary" onClick={handleSave}>
-            Guardar
+            Save
           </Button>
         </DialogActions>
       </Dialog>
