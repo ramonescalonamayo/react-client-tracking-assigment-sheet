@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -19,65 +19,22 @@ import {
   Tab,
   Tabs,
   Box,
-  InputLabel,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
+import {
+  getAssignments,
+  createAssignment,
+  updateAssignment,
+  deleteAssignment,
+} from "../src/api/assignments";
 
 function App() {
   const statusOptions = ["Not Started", "In Progress", "Completed"];
-  const [rows, setRows] = useState([
-    {
-      id: 1,
-      dueDate: "2025/11/05",
-      name: "Michelle Mullen",
-      schoolSite: "San Francisco",
-      status: "Not Started",
-      assignment: "Annual Review Plan",
-      appSigned: "Yes",
-      dateSigned: "2025/11/14",
-      iepSigned: "Yes",
-      iepDateSigned: "2025/11/14",
-    },
-    {
-      id: 2,
-      dueDate: "2025/11/10",
-      name: "Ramon Escalona Mayo",
-      schoolSite: "San Francisco",
-      status: "Completed",
-      assignment: "Triennial",
-      appSigned: "No",
-      dateSigned: "2025/11/14",
-      iepSigned: "Yes",
-      iepDateSigned: "2025/11/14",
-    },
-    {
-      id: 3,
-      dueDate: "2025/11/8",
-      name: "Esther Escalona Mayo",
-      schoolSite: "San Francisco",
-      status: "Not Started",
-      assignment: "Assesment",
-      appSigned: "No",
-      dateSigned: "2025/11/14",
-      iepSigned: "Yes",
-      iepDateSigned: "2025/11/14",
-    },
-    {
-      id: 4,
-      dueDate: "2025/11/13",
-      name: "Diala Mayo Chacon",
-      schoolSite: "San Francisco",
-      status: "Not Started",
-      assignment: "Assesment",
-      appSigned: "No",
-      dateSigned: "2025/11/14",
-      iepSigned: "Yes",
-      iepDateSigned: "2025/11/14",
-    },
-  ]);
-
+  const [assignments, setAssignments] = useState([]);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
+
   const [formData, setFormData] = useState({
     dueDate: "",
     name: "",
@@ -85,13 +42,30 @@ function App() {
     status: "",
     assignment: "",
     appSigned: "",
+    dateSigned: "",
+    iepSigned: "",
+    iepDateSigned: "",
   });
 
-  const [tabValue, setTabValue] = useState(0);
+  // 🔹 Cargar asignaciones al iniciar
+  useEffect(() => {
+    loadAssignments();
+  }, []);
 
+  async function loadAssignments() {
+    try {
+      const data = await getAssignments();
+      setAssignments(data);
+    } catch (error) {
+      console.error("❌ Error al cargar assignments:", error);
+    }
+  }
+
+  // 🔹 Abrir modal (nuevo o editar)
   const handleOpen = (row = null) => {
     if (row) {
-      setEditRow(row.id);
+      setEditRow(row);
+      console.log(editRow)
       setFormData(row);
     } else {
       setEditRow(null);
@@ -102,6 +76,9 @@ function App() {
         status: "",
         assignment: "",
         appSigned: "",
+        dateSigned: "",
+        iepSigned: "",
+        iepDateSigned: "",
       });
     }
     setOpen(true);
@@ -109,99 +86,112 @@ function App() {
 
   const handleClose = () => setOpen(false);
 
-  const handleSave = () => {
-    let updatedRows;
-    if (editRow) {
-      updatedRows = rows.map((r) => (r.id === editRow ? formData : r));
-    } else {
-      updatedRows = [...rows, { ...formData, id: Date.now() }];
+  // 🔹 Crear o editar assignment
+  const handleSave = async () => {
+    try {
+      if (editRow) {
+        const updated = await updateAssignment(editRow._id, formData);
+        setAssignments((prev) =>
+          prev.map((a) => (a._id === editRow._id ? updated : a))
+        );
+        console.log("✏️ Assignment actualizado:", updated);
+      } else {
+        // Crear
+        const newAssignment = await createAssignment(formData);
+        setAssignments((prev) => [...prev, newAssignment]);
+        console.log("✅ Assignment creado:", newAssignment);
+      }
+
+      // Cerrar modal y limpiar
+      handleClose();
+      setEditRow(null);
+      setFormData({
+        dueDate: "",
+        name: "",
+        schoolSite: "",
+        status: "",
+        assignment: "",
+        appSigned: "",
+        dateSigned: "",
+        iepSigned: "",
+        iepDateSigned: "",
+      });
+    } catch (error) {
+      console.error("❌ Error al guardar:", error);
     }
-    // Ordenamos las filas por fecha antes de actualizar el estado
-    setRows(sortByDate(updatedRows));
-    setOpen(false);
   };
 
-  const handleDelete = (id) => {
-    const updatedRows = rows.filter((r) => r.id !== id);
-    setRows(sortByDate(updatedRows));
+  // 🔹 Eliminar
+  const handleDelete = async (id) => {
+    try {
+      await deleteAssignment(id);
+      setAssignments((prev) => prev.filter((a) => a._id !== id));
+      console.log(`🗑️ Assignment ID ${id} eliminado`);
+    } catch (error) {
+      console.error("❌ Error al eliminar:", error);
+    }
   };
 
-  const sortByDate = (data) => {
-    return data.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  // 🔹 Actualizar status automáticamente en el servidor
+  const handleStatusChange = async (id, value) => {
+    try {
+      const updated = await updateAssignment(id, { status: value });
+      setAssignments((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status: value } : a))
+      );
+      console.log(`✅ Status de ID ${id} actualizado a: ${value}`);
+    } catch (error) {
+      console.error("❌ Error al actualizar el status:", error);
+    }
   };
 
-  const handleStatusChange = (id, value) => {
-    const updatedRows = rows.map((r) =>
-      r.id === id ? { ...r, status: value } : r
-    );
-    setRows(sortByDate(updatedRows));
-  };
+  
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  const filteredRows = rows.filter((row) => {
-    if (tabValue === 0)
-      return row.status !== "Completed"; // Pendientes o In Progress
-    else return row.status === "Completed"; // Completadas
-  });
+  const filteredRows = assignments.filter((row) =>
+    tabValue === 0 ? row.status !== "Completed" : row.status === "Completed"
+  );
 
   return (
     <div style={{ padding: "50px", textAlign: "center" }}>
-      <h1>ASSIGMENTS</h1>
+      <h1>ASSIGNMENTS</h1>
+
       <Tabs value={tabValue} onChange={handleTabChange} centered>
-        <Tab label="TRACKING ASSIGMENTS" />
-        <Tab label="ASSIGMENTS COMPLETED" />
+        <Tab label="TRACKING ASSIGNMENTS" />
+        <Tab label="ASSIGNMENTS COMPLETED" />
       </Tabs>
-      <br></br>
-      <Box m="2">
+
+      <br />
+      <Box m={2}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleOpen()}
           style={{ marginBottom: "20px" }}
         >
-          Add New Assigment
+          Add New Assignment
         </Button>
+
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  <h3>Due Date</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Name</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>School Site</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Status</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Assignment</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>App Signed</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Date Signed</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>IEP Signed</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Date Signed</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Edit</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Delete</h3>
-                </TableCell>
+                <TableCell><h3>Due Date</h3></TableCell>
+                <TableCell><h3>Name</h3></TableCell>
+                <TableCell><h3>School Site</h3></TableCell>
+                <TableCell><h3>Status</h3></TableCell>
+                <TableCell><h3>Assignment</h3></TableCell>
+                <TableCell><h3>App Signed</h3></TableCell>
+                <TableCell><h3>Date Signed</h3></TableCell>
+                <TableCell><h3>IEP Signed</h3></TableCell>
+                <TableCell><h3>IEP Date Signed</h3></TableCell>
+                <TableCell><h3>Edit</h3></TableCell>
+                <TableCell><h3>Delete</h3></TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {filteredRows.map((row) => (
                 <TableRow key={row.id}>
@@ -212,7 +202,7 @@ function App() {
                     <Select
                       value={row.status}
                       onChange={(e) =>
-                        handleStatusChange(row.id, e.target.value)
+                        handleStatusChange(row._id, e.target.value)
                       }
                       size="small"
                     >
@@ -236,7 +226,7 @@ function App() {
                   <TableCell>
                     <IconButton
                       color="secondary"
-                      onClick={() => handleDelete(row.id)}
+                      onClick={() => handleDelete(row._id)}
                     >
                       <Delete />
                     </IconButton>
@@ -247,10 +237,10 @@ function App() {
           </Table>
         </TableContainer>
 
-        {/* Dialogo para añadir/editar */}
+        {/* 🔹 Modal Crear / Editar */}
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>
-            {editRow ? "Edit Assigment" : "Add New Assigment"}
+            {editRow ? "Edit Assignment" : "Add New Assignment"}
           </DialogTitle>
           <DialogContent
             style={{
@@ -285,9 +275,11 @@ function App() {
             />
             <Select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
               size="small"
-              InputLabelProps = {{shrink: true}}            >
+            >
               {statusOptions.map((option) => (
                 <MenuItem key={option} value={option}>
                   {option}
@@ -307,7 +299,6 @@ function App() {
               onChange={(e) =>
                 setFormData({ ...formData, appSigned: e.target.value })
               }
-              InputLabelProps ={{ shrink: true }}
             />
             <TextField
               label="Date Signed"
@@ -320,14 +311,13 @@ function App() {
             />
             <TextField
               label="IEP Signed"
-              value={formData.iepDateSigned}
+              value={formData.iepSigned}
               onChange={(e) =>
                 setFormData({ ...formData, iepSigned: e.target.value })
               }
-              InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="Date Signed"
+              label="IEP Date Signed"
               type="date"
               value={formData.iepDateSigned}
               onChange={(e) =>
