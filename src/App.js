@@ -16,11 +16,14 @@ import {
   TextField,
   Select,
   MenuItem,
+  Checkbox,
   Tab,
   Tabs,
   Box,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { Edit, Delete, StarBorder, Star } from "@mui/icons-material";
 import {
   getAssignments,
   createAssignment,
@@ -65,7 +68,7 @@ function App() {
   const handleOpen = (row = null) => {
     if (row) {
       setEditRow(row);
-      console.log(editRow)
+      console.log(editRow);
       setFormData(row);
     } else {
       setEditRow(null);
@@ -145,7 +148,6 @@ function App() {
     }
   };
 
-  
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -153,6 +155,34 @@ function App() {
   const filteredRows = assignments.filter((row) =>
     tabValue === 0 ? row.status !== "Completed" : row.status === "Completed"
   );
+
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(assignments);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Assignments");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
+    saveAs(blob, "assignments.xlsx");
+  };
+
+  const togglePriority = (id) => {
+    setAssignments((prev) =>
+      prev.map((a) => (a._id === id ? { ...a, priority: !a.priority } : a))
+    );
+  };
+   const handleCheckboxChange = (id, field) => {
+    setAssignments((prev) =>
+      prev.map((a) =>
+        a._id === id ? { ...a, [field]: !a[field] } : a
+      )
+    );
+  };
 
   return (
     <div style={{ padding: "50px", textAlign: "center" }}>
@@ -173,28 +203,78 @@ function App() {
         >
           Add New Assignment
         </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={exportToExcel}
+          sx={{ mb: 2 }}
+        >
+          Export to Excel
+        </Button>
 
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell><h3>Due Date</h3></TableCell>
-                <TableCell><h3>Name</h3></TableCell>
-                <TableCell><h3>School Site</h3></TableCell>
-                <TableCell><h3>Status</h3></TableCell>
-                <TableCell><h3>Assignment</h3></TableCell>
-                <TableCell><h3>App Signed</h3></TableCell>
-                <TableCell><h3>Date Signed</h3></TableCell>
-                <TableCell><h3>IEP Signed</h3></TableCell>
-                <TableCell><h3>IEP Date Signed</h3></TableCell>
-                <TableCell><h3>Edit</h3></TableCell>
-                <TableCell><h3>Delete</h3></TableCell>
+                <TableCell>
+                  <h3>Priority</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Due Date</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Name</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>School Site</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Status</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Assignment</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>App Signed</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Date Signed</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>IEP Signed</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>IEP Date Signed</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Edit</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Delete</h3>
+                </TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
               {filteredRows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row._id}
+                  sx={{
+                    backgroundColor: row.priority
+                      ? "rgba(150, 255, 173, 0.6)"
+                      : "inherit",
+                    "&:hover": {
+                      backgroundColor: row.priority
+                        ? "rgba(255, 230, 150, 0.8)"
+                        : "rgba(0,0,0,0.04)",
+                    },
+                  }}
+                >
+                  <TableCell>
+                    <IconButton onClick={() => togglePriority(row._id)}>
+                      {row.priority ? <Star color="warning" /> : <StarBorder />}
+                    </IconButton>
+                  </TableCell>
                   <TableCell>{row.dueDate}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.schoolSite}</TableCell>
@@ -214,9 +294,17 @@ function App() {
                     </Select>
                   </TableCell>
                   <TableCell>{row.assignment}</TableCell>
-                  <TableCell>{row.appSigned}</TableCell>
+                  <TableCell><Checkbox
+                    checked={row.appSigned}
+                    onChange={() => handleCheckboxChange(row._id, "appSigned")}
+                    color="success"
+                  /></TableCell>
                   <TableCell>{row.dateSigned}</TableCell>
-                  <TableCell>{row.iepSigned}</TableCell>
+                  <TableCell><Checkbox
+                    checked={row.iepSigned}
+                    onChange={() => handleCheckboxChange(row._id, "iepSigned")}
+                    color="success"
+                  /></TableCell>
                   <TableCell>{row.iepDateSigned}</TableCell>
                   <TableCell>
                     <IconButton color="primary" onClick={() => handleOpen(row)}>
