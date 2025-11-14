@@ -1,4 +1,4 @@
-const API_URL = "https://tu-backend.onrender.com/api/assignments";
+const API_URL = "https://backend-tracking-sheet-1.onrender.com/api/assignments";
 
 export async function getAssignments() {
   const res = await fetch(API_URL);
