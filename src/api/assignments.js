@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:4000/api/assignments";
+const API_URL = "https://tu-backend.onrender.com/api/assignments";
 
 export async function getAssignments() {
   const res = await fetch(API_URL);
