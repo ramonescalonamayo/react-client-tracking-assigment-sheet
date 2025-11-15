@@ -183,6 +183,10 @@ function App() {
       )
     );
   };
+  const toInputDate = (isoString) => {
+  if (!isoString) return "";
+  return new Date(isoString).toISOString("en-US").split("T")[0];
+};
 
   return (
     <div style={{ padding: "50px", textAlign: "center" }}>
@@ -275,7 +279,7 @@ function App() {
                       {row.priority ? <Star color="warning" /> : <StarBorder />}
                     </IconButton>
                   </TableCell>
-                  <TableCell>{row.dueDate}</TableCell>
+                  <TableCell>{new Date(row.dueDate).toLocaleDateString("en-US") }</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.schoolSite}</TableCell>
                   <TableCell>
@@ -299,13 +303,13 @@ function App() {
                     onChange={() => handleCheckboxChange(row._id, "appSigned")}
                     color="success"
                   /></TableCell>
-                  <TableCell>{row.dateSigned}</TableCell>
+                  <TableCell>{new Date(row.dateSigned).toLocaleDateString("en-US") }</TableCell>
                   <TableCell><Checkbox
                     checked={row.iepSigned}
                     onChange={() => handleCheckboxChange(row._id, "iepSigned")}
                     color="success"
                   /></TableCell>
-                  <TableCell>{row.iepDateSigned}</TableCell>
+                  <TableCell>{new Date(row.iepDateSigned).toLocaleDateString("en-US") }</TableCell>
                   <TableCell>
                     <IconButton color="primary" onClick={() => handleOpen(row)}>
                       <Edit />
@@ -341,11 +345,12 @@ function App() {
             <TextField
               label="Due Date"
               type="date"
-              value={formData.dueDate}
+              value={toInputDate(formData.dueDate)}
               onChange={(e) =>
                 setFormData({ ...formData, dueDate: e.target.value })
               }
               InputLabelProps={{ shrink: true }}
+              inputProps = {{min:new Date().toISOString().split("T")[0]}}
             />
             <TextField
               label="Name"
@@ -391,7 +396,7 @@ function App() {
             <TextField
               label="Date Signed"
               type="date"
-              value={formData.dateSigned}
+              value={toInputDate(formData.dateSigned)}
               onChange={(e) =>
                 setFormData({ ...formData, dateSigned: e.target.value })
               }
@@ -407,7 +412,7 @@ function App() {
             <TextField
               label="IEP Date Signed"
               type="date"
-              value={formData.iepDateSigned}
+              value={toInputDate(formData.iepDateSigned)}
               onChange={(e) =>
                 setFormData({ ...formData, iepDateSigned: e.target.value })
               }
