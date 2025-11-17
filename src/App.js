@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { Edit, Delete, StarBorder, Star } from "@mui/icons-material";
+import { Edit, Delete, StarBorder, Star, Assessment } from "@mui/icons-material";
 import {
   getAssignments,
   createAssignment,
@@ -33,6 +33,7 @@ import {
 
 function App() {
   const statusOptions = ["Not Started", "In Progress", "Completed"];
+  const assignmentOptions = ["Assessment","Triennial","Annual Review Plan"];
   const [assignments, setAssignments] = useState([]);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -379,13 +380,19 @@ function App() {
                 </MenuItem>
               ))}
             </Select>
-            <TextField
-              label="Assignment"
+            <Select
               value={formData.assignment}
               onChange={(e) =>
                 setFormData({ ...formData, assignment: e.target.value })
               }
-            />
+              size="small"
+            >
+              {assignmentOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
             <TextField
               label="App Signed"
               value={formData.appSigned}
