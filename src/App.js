@@ -20,10 +20,12 @@ import {
   Tab,
   Tabs,
   Box,
+  FormControl,
+  InputLabel, 
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { Edit, Delete, StarBorder, Star} from "@mui/icons-material";
+import { Edit, Delete, StarBorder, Star } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import {
@@ -35,7 +37,7 @@ import {
 
 function App() {
   const statusOptions = ["Not Started", "In Progress", "Completed"];
-  const assignmentOptions = ["Assessment","Triennial","Annual Review Plan"];
+  const assignmentOptions = ["Assessment", "Triennial", "Annual Review Plan"];
   const [assignments, setAssignments] = useState([]);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -179,17 +181,15 @@ function App() {
       prev.map((a) => (a._id === id ? { ...a, priority: !a.priority } : a))
     );
   };
-   const handleCheckboxChange = (id, field) => {
+  const handleCheckboxChange = (id, field) => {
     setAssignments((prev) =>
-      prev.map((a) =>
-        a._id === id ? { ...a, [field]: !a[field] } : a
-      )
+      prev.map((a) => (a._id === id ? { ...a, [field]: !a[field] } : a))
     );
   };
   const toInputDate = (isoString) => {
-  if (!isoString) return "";
-  return new Date(isoString).toISOString("en-US").split("T")[0];
-};
+    if (!isoString) return "";
+    return new Date(isoString).toISOString("en-US").split("T")[0];
+  };
 
   return (
     <div style={{ padding: "50px", textAlign: "center" }}>
@@ -203,23 +203,23 @@ function App() {
       <br />
       <Box m={2}>
         <Box mb={2} display="flex" justifyContent="center" gap={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => handleOpen()}
-          startIcon={<AddIcon />}
-        >
-          Add New Assignment
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={exportToExcel}
-          startIcon={<FileDownloadIcon />}
-        >
-          Export to Excel
-        </Button>
-</Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleOpen()}
+            startIcon={<AddIcon />}
+          >
+            Add New Assignment
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={exportToExcel}
+            startIcon={<FileDownloadIcon />}
+          >
+            Export to Excel
+          </Button>
+        </Box>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -283,7 +283,9 @@ function App() {
                       {row.priority ? <Star color="warning" /> : <StarBorder />}
                     </IconButton>
                   </TableCell>
-                  <TableCell>{new Date(row.dueDate).toLocaleDateString("en-US") }</TableCell>
+                  <TableCell>
+                    {new Date(row.dueDate).toLocaleDateString("en-US")}
+                  </TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.schoolSite}</TableCell>
                   <TableCell>
@@ -302,18 +304,30 @@ function App() {
                     </Select>
                   </TableCell>
                   <TableCell>{row.assignment}</TableCell>
-                  <TableCell><Checkbox
-                    checked={row.appSigned}
-                    onChange={() => handleCheckboxChange(row._id, "appSigned")}
-                    color="success"
-                  /></TableCell>
-                  <TableCell>{new Date(row.dateSigned).toLocaleDateString("en-US") }</TableCell>
-                  <TableCell><Checkbox
-                    checked={row.iepSigned}
-                    onChange={() => handleCheckboxChange(row._id, "iepSigned")}
-                    color="success"
-                  /></TableCell>
-                  <TableCell>{new Date(row.iepDateSigned).toLocaleDateString("en-US") }</TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={row.appSigned}
+                      onChange={() =>
+                        handleCheckboxChange(row._id, "appSigned")
+                      }
+                      color="success"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(row.dateSigned).toLocaleDateString("en-US")}
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={row.iepSigned}
+                      onChange={() =>
+                        handleCheckboxChange(row._id, "iepSigned")
+                      }
+                      color="success"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(row.iepDateSigned).toLocaleDateString("en-US")}
+                  </TableCell>
                   <TableCell>
                     <IconButton color="primary" onClick={() => handleOpen(row)}>
                       <Edit />
@@ -354,7 +368,7 @@ function App() {
                 setFormData({ ...formData, dueDate: e.target.value })
               }
               InputLabelProps={{ shrink: true }}
-              inputProps = {{min:new Date().toISOString().split("T")[0]}}
+              inputProps={{ min: new Date().toISOString().split("T")[0] }}
             />
             <TextField
               label="Name"
@@ -370,32 +384,42 @@ function App() {
                 setFormData({ ...formData, schoolSite: e.target.value })
               }
             />
-            <Select
-              value={formData.status}
-              onChange={(e) =>
-                setFormData({ ...formData, status: e.target.value })
-              }
-              size="small"
-            >
-              {statusOptions.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-            <Select
-              value={formData.assignment}
-              onChange={(e) =>
-                setFormData({ ...formData, assignment: e.target.value })
-              }
-              size="small"
-            >
-              {assignmentOptions.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
+            <FormControl fullWidth size="small" variant="outlined">
+              <InputLabel id="status-label">Status</InputLabel>
+              <Select
+                labelId="status-label"
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({ ...formData, status: e.target.value })
+                }
+                size="small"
+                label="Status"
+              >
+                {statusOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth size="small" variant="outlined">
+              <InputLabel id="assignment-label">Assignment</InputLabel>
+              <Select
+                labelId="assignment-label"
+                value={formData.assignment}
+                onChange={(e) =>
+                  setFormData({ ...formData, assignment: e.target.value })
+                }
+                size="small"
+                label="Assignment"
+              >
+                {assignmentOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               label="App Signed"
               value={formData.appSigned}
