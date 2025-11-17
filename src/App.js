@@ -23,7 +23,9 @@ import {
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { Edit, Delete, StarBorder, Star, Assessment } from "@mui/icons-material";
+import { Edit, Delete, StarBorder, Star} from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import {
   getAssignments,
   createAssignment,
@@ -200,11 +202,12 @@ function App() {
 
       <br />
       <Box m={2}>
+        <Box mb={2} display="flex" justifyContent="center" gap={2}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleOpen()}
-          style={{ marginBottom: "20px" }}
+          startIcon={<AddIcon />}
         >
           Add New Assignment
         </Button>
@@ -212,11 +215,11 @@ function App() {
           variant="contained"
           color="primary"
           onClick={exportToExcel}
-          sx={{ mb: 2 }}
+          startIcon={<FileDownloadIcon />}
         >
           Export to Excel
         </Button>
-
+</Box>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
