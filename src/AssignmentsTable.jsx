@@ -275,16 +275,16 @@ function AssignmentsTable() {
                   <h3>Assignment</h3>
                 </TableCell>
                 <TableCell>
-                  <h3>Afirmed</h3>
+                  <h3>AP Signed</h3>
                 </TableCell>
                 <TableCell>
                   <h3>Date Signed</h3>
                 </TableCell>
                 <TableCell>
-                  <h3>IEP Signed</h3>
+                  <h3>IEP Affirmed</h3>
                 </TableCell>
                 <TableCell>
-                  <h3>IEP Date Signed</h3>
+                  <h3>Date Affirmed</h3>
                 </TableCell>
                 <TableCell>
                   <h3>Edit</h3>
