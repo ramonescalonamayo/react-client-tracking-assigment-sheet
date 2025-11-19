@@ -39,7 +39,7 @@ import { auth } from "./firebase";
 
 function AssignmentsTable() {
   const statusOptions = ["Not Started", "In Progress", "Completed"];
-  const assignmentOptions = ["Assessment", "Triennial", "Annual Review Plan"];
+  const assignmentOptions = ["30-day", "Triennial", "Annual Review Plan"];
   const [assignments, setAssignments] = useState([]);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -207,7 +207,7 @@ function AssignmentsTable() {
       <h1>ASSIGNMENTS</h1>
 
       <Tabs value={tabValue} onChange={handleTabChange} centered>
-        <Tab label="TRACKING ASSIGNMENTS" />
+        <Tab label="UPCOMING ASSIGNMENTS" />
         <Tab label="ASSIGNMENTS COMPLETED" />
       </Tabs>
 
@@ -275,7 +275,7 @@ function AssignmentsTable() {
                   <h3>Assignment</h3>
                 </TableCell>
                 <TableCell>
-                  <h3>App Signed</h3>
+                  <h3>Afirmed</h3>
                 </TableCell>
                 <TableCell>
                   <h3>Date Signed</h3>
