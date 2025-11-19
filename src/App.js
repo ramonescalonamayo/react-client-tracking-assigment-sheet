@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Login";
 import PrivateRoute from "./PrivateRoute";
-import AssignmentsTable from "./AssignmentsTable";
+import AssignmentsTable from "./assignments/AssignmentsTable";
 
 function App() {
   return (
