@@ -453,7 +453,7 @@ function AssignmentsTable() {
               </Select>
             </FormControl>
             <TextField
-              label="App Signed"
+              label="AP Signed"
               value={formData.appSigned}
               onChange={(e) =>
                 setFormData({ ...formData, appSigned: e.target.value })
@@ -469,14 +469,14 @@ function AssignmentsTable() {
               InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="IEP Signed"
+              label="IEP Affirmed"
               value={formData.iepSigned}
               onChange={(e) =>
                 setFormData({ ...formData, iepSigned: e.target.value })
               }
             />
             <TextField
-              label="IEP Date Signed"
+              label="Date Affirmed"
               type="date"
               value={toInputDate(formData.iepDateSigned)}
               onChange={(e) =>
