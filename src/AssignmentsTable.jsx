@@ -21,7 +21,7 @@ import {
   Tabs,
   Box,
   FormControl,
-  InputLabel, 
+  InputLabel,
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -34,10 +34,12 @@ import {
   updateAssignment,
   deleteAssignment,
 } from "../src/api/assignments";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase";
 
 function AssignmentsTable() {
   const statusOptions = ["Not Started", "In Progress", "Completed"];
-  const assignmentOptions = ["Assessment", "Triennial", "Annual Review Plan"];
+  const assignmentOptions = ["30-day", "Triennial", "Annual Review Plan"];
   const [assignments, setAssignments] = useState([]);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -63,11 +65,20 @@ function AssignmentsTable() {
   async function loadAssignments() {
     try {
       const data = await getAssignments();
+      data.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
       setAssignments(data);
     } catch (error) {
       console.error("❌ Error al cargar assignments:", error);
     }
   }
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.log("Error al cerrar sesión:", error);
+    }
+  };
 
   // 🔹 Abrir modal (nuevo o editar)
   const handleOpen = (row = null) => {
@@ -196,9 +207,30 @@ function AssignmentsTable() {
       <h1>ASSIGNMENTS</h1>
 
       <Tabs value={tabValue} onChange={handleTabChange} centered>
-        <Tab label="TRACKING ASSIGNMENTS" />
+        <Tab label="UPCOMING ASSIGNMENTS" />
         <Tab label="ASSIGNMENTS COMPLETED" />
       </Tabs>
+
+      <button
+        onClick={handleLogout}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          padding: "10px 20px",
+          backgroundColor: "#d32f2f",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          cursor: "pointer",
+          fontSize: "16px",
+          transition: "0.2s",
+        }}
+        onMouseOver={(e) => (e.target.style.backgroundColor = "#a51111")}
+        onMouseOut={(e) => (e.target.style.backgroundColor = "#d32f2f")}
+      >
+        Logout
+      </button>
 
       <br />
       <Box m={2}>
@@ -243,7 +275,7 @@ function AssignmentsTable() {
                   <h3>Assignment</h3>
                 </TableCell>
                 <TableCell>
-                  <h3>App Signed</h3>
+                  <h3>Afirmed</h3>
                 </TableCell>
                 <TableCell>
                   <h3>Date Signed</h3>
@@ -461,8 +493,8 @@ function AssignmentsTable() {
           </DialogActions>
         </Dialog>
       </Box>
-    </div>  
-  )
+    </div>
+  );
 }
 
 export default AssignmentsTable;
