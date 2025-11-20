@@ -93,11 +93,13 @@ function AssignmentsTable() {
   const handleSave = async () => {
     try {
       if (editRow) {
+        if (!validateForm()) return;
         const updated = await updateAssignment(editRow._id, formData);
         setAssignments((prev) =>
           prev.map((a) => (a._id === editRow._id ? updated : a))
         );
       } else {
+        if (!validateForm()) return;
         const newAssignment = await createAssignment(formData);
         setAssignments((prev) => [...prev, newAssignment]);
       }
@@ -162,6 +164,18 @@ function AssignmentsTable() {
 
   const handleTabChange = (e, v) => setTabValue(v);
 
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.dueDate) newErrors.dueDate = "Due date is required";
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   return (
     <div style={{ padding: "50px", textAlign: "center" }}>
       <h1>ASSIGNMENTS</h1>
@@ -194,6 +208,8 @@ function AssignmentsTable() {
           statusOptions={statusOptions}
           assignmentOptions={assignmentOptions}
           handleSave={handleSave}
+          errors={errors}
+          setErrors={setErrors}
         />
       </Box>
     </div>
