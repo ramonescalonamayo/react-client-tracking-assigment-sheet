@@ -1,5 +1,3 @@
-// src/components/assignments/AssignmentsHeader.jsx
-
 import { Button, Tabs, Tab, Box } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
