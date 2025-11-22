@@ -10,7 +10,7 @@ import AssignmentsHeader from "./AssignmentsHeader";
 import AssignmentDialog from "./AssignmentDialog";
 import AssignmentsList from "./AssignmentsList";
 
-import { Box } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { signOut } from "firebase/auth";
@@ -22,6 +22,7 @@ function AssignmentsTable() {
 
   const [assignments, setAssignments] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -59,6 +60,8 @@ function AssignmentsTable() {
       setAssignments(data);
     } catch (error) {
       console.error("❌ Error loading assignments:", error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -189,16 +192,24 @@ function AssignmentsTable() {
       />
 
       <Box mt={2}>
-        <AssignmentsList
-          rows={filteredRows}
-          statusOptions={statusOptions}
-          handleStatusChange={handleStatusChange}
-          togglePriority={togglePriority}
-          handleCheckboxChange={handleCheckboxChange}
-          handleOpen={handleOpen}
-          handleDelete={handleDelete}
-        />
-
+        {loading ? (
+          <>
+          <Skeleton variant="rectangular" height={100} />
+          <Skeleton variant="rectangular" height={100} />
+          <Skeleton variant="rectangular" height={100} />
+          <Skeleton variant="rectangular" height={100} />
+          </>
+        ) : (
+          <AssignmentsList
+            rows={filteredRows}
+            statusOptions={statusOptions}
+            handleStatusChange={handleStatusChange}
+            togglePriority={togglePriority}
+            handleCheckboxChange={handleCheckboxChange}
+            handleOpen={handleOpen}
+            handleDelete={handleDelete}
+          />
+        )}
         <AssignmentDialog
           open={open}
           handleClose={handleClose}
