@@ -137,6 +137,22 @@ function AssignmentDialog({
               </FormControl>
             </Grid>
 
+            {/* PRIORITY */}
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    color="secondary"
+                    checked={Boolean(formData.priority)}
+                    onChange={(e) =>
+                      setFormData({ ...formData, priority: e.target.checked })
+                    }
+                  />
+                }
+                label="Priority"
+              />
+            </Grid>
+
             {/* AP SIGNED + DATE */}
             <Grid item xs={12} sm={6}>
               <FormControlLabel
