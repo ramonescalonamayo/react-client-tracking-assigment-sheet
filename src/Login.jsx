@@ -1,13 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Snackbar, Alert, Typography } from "@mui/material";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const verificationSent = location?.state?.verificationSent || null;
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  useEffect(() => {
+    if (verificationSent) setOpenSnackbar(true);
+  }, [verificationSent]);
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setOpenSnackbar(false);
+  };
 
   const handleLogin = async () => {
     try {
@@ -68,6 +81,8 @@ export default function Login() {
           }}
         />
 
+        {/* Snackbar handled below */}
+
         {error && (
           <p style={{ color: "red", marginBottom: "10px", fontSize: "14px" }}>
             {error}
@@ -111,6 +126,18 @@ export default function Login() {
           </button>
         </div>
       </div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={8000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: "100%" }}>
+          <Typography variant="subtitle1" sx={{ fontSize: 24 }}>
+            Verification email sent to {verificationSent}. Please check your inbox and verify before logging in.
+          </Typography>
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
