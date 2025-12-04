@@ -143,12 +143,12 @@ function AssignmentDialog({
                 control={
                   <Checkbox
                     color="success"
-                    disabled={formData.assignment !== "Triennial" }
-                    checked={!!formData.apSigned}
+                    disabled={formData.assignment !== "Triennial"}
+                    checked={Boolean(formData.appSigned)}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        apSigned: e.target.checked,
+                        appSigned: e.target.checked,
                       })
                     }
                   />
@@ -160,22 +160,20 @@ function AssignmentDialog({
             <Grid item xs={12} sm={6}>
               <DatePicker
                 label="AP Date Signed"
-                value={
-                  formData.apDateSigned ? dayjs(formData.apDateSigned) : null
-                }
+                value={formData.dateSigned ? dayjs(formData.dateSigned) : null}
                 onChange={(newValue) =>
                   setFormData({
                     ...formData,
-                    apDateSigned: newValue ? newValue.toISOString() : "",
+                    dateSigned: newValue ? newValue.toISOString() : "",
                   })
                 }
-                disabled={!formData.apSigned}
+                disabled={!formData.appSigned}
                 minDate={dayjs()}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    error: !!errors.apDateSigned,
-                    helperText: errors.apDateSigned,
+                    error: !!errors.dateSigned,
+                    helperText: errors.dateSigned,
                   },
                 }}
               />

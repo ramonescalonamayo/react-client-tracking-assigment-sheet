@@ -91,6 +91,25 @@ export default function Login() {
         >
           Login
         </button>
+        <div style={{ marginTop: 14 }}>
+          <p style={{ margin: 0, fontSize: 14 }}>Don't have an account?</p>
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            style={{
+              marginTop: 8,
+              background: "none",
+              border: "none",
+              color: "#1976d2",
+              cursor: "pointer",
+              padding: 0,
+              fontSize: 16,
+              textDecoration: "underline",
+            }}
+          >
+            Sign up
+          </button>
+        </div>
       </div>
     </div>
   );
