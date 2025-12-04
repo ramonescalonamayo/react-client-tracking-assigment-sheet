@@ -47,6 +47,7 @@ function AssignmentsTable() {
     dateSigned: "",
     iepSigned: "",
     iepDateSigned: "",
+    priority: false,
   });
 
   // Cargar datos y re-cargar cuando cambie el estado de autenticación
@@ -72,7 +73,13 @@ function AssignmentsTable() {
   async function loadAssignments() {
     try {
       const data = await getAssignments();
-      data.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      // Sort: priority=true first, then by due date
+      data.sort((a, b) => {
+        if (Boolean(a.priority) !== Boolean(b.priority)) {
+          return Boolean(b.priority) ? 1 : -1; // priority=true comes first
+        }
+        return new Date(a.dueDate) - new Date(b.dueDate); // then by date
+      });
       // If a user is logged in, only show assignments created by that user
       const user = auth.currentUser;
       if (user) {
@@ -115,6 +122,7 @@ function AssignmentsTable() {
         dateSigned: "",
         iepSigned: "",
         iepDateSigned: "",
+        priority: false,
       }
     );
     setOpen(true);
@@ -188,10 +196,26 @@ function AssignmentsTable() {
     }
   };
 
-  const togglePriority = (id) => {
+  const togglePriority = async (id) => {
+    let newValue;
+    // optimistic update
     setAssignments((prev) =>
-      prev.map((a) => (a._id === id ? { ...a, priority: !a.priority } : a))
+      prev.map((a) => {
+        if (a._id !== id) return a;
+        newValue = !Boolean(a.priority);
+        return { ...a, priority: newValue };
+      })
     );
+
+    try {
+      await updateAssignment(id, { priority: newValue });
+    } catch (error) {
+      console.error("Priority toggle error:", error);
+      // revert on failure
+      setAssignments((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, priority: !newValue } : a))
+      );
+    }
   };
 
   const handleCheckboxChange = async (id, field) => {
