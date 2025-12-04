@@ -57,7 +57,7 @@ function AssignmentRow({
 
       <TableCell>
         <Checkbox
-          checked={row.appSigned}
+          checked={Boolean(row.appSigned)}
           onChange={() => handleCheckboxChange(row._id, "appSigned")}
           color="success"
         />
@@ -71,7 +71,7 @@ function AssignmentRow({
 
       <TableCell>
         <Checkbox
-          checked={row.iepSigned}
+          checked={Boolean(row.iepSigned)}
           onChange={() => handleCheckboxChange(row._id, "iepSigned")}
           color="success"
         />

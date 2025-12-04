@@ -10,10 +10,19 @@ import AssignmentsHeader from "./AssignmentsHeader";
 import AssignmentDialog from "./AssignmentDialog";
 import AssignmentsList from "./AssignmentsList";
 
-import { Box, Skeleton } from "@mui/material";
+import {
+  Box,
+  Skeleton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 
 function AssignmentsTable() {
@@ -40,9 +49,16 @@ function AssignmentsTable() {
     iepDateSigned: "",
   });
 
-  // Cargar datos
+  // Cargar datos y re-cargar cuando cambie el estado de autenticación
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, () => {
+      loadAssignments();
+    });
+
+    // initial load
     loadAssignments();
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -57,7 +73,20 @@ function AssignmentsTable() {
     try {
       const data = await getAssignments();
       data.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-      setAssignments(data);
+      // If a user is logged in, only show assignments created by that user
+      const user = auth.currentUser;
+      if (user) {
+        const own = data.filter(
+          (d) =>
+            d.createdBy === user.uid ||
+            d.userId === user.uid ||
+            d.owner === user.uid
+        );
+        setAssignments(own);
+      } else {
+        // no user -> empty list
+        setAssignments([]);
+      }
     } catch (error) {
       console.error("❌ Error loading assignments:", error);
     } finally {
@@ -94,16 +123,25 @@ function AssignmentsTable() {
   const handleClose = () => setOpen(false);
 
   const handleSave = async () => {
+    const user = auth.currentUser;
     try {
       if (editRow) {
         if (!validateForm()) return;
-        const updated = await updateAssignment(editRow._id, formData);
+        const updated = await updateAssignment(editRow._id, {
+          ...formData,
+          createdBy: user ? user.uid : "",
+        });
         setAssignments((prev) =>
           prev.map((a) => (a._id === editRow._id ? updated : a))
         );
+        console.log("Updated assignment:", updated);
       } else {
         if (!validateForm()) return;
-        const newAssignment = await createAssignment(formData);
+        // Attach current user's UID so assignments are per-user
+
+        const payload = { ...formData, createdBy: user ? user.uid : undefined };
+        console.log("Creating assignment with payload:", payload);
+        const newAssignment = await createAssignment(payload);
         setAssignments((prev) => [...prev, newAssignment]);
       }
 
@@ -115,11 +153,27 @@ function AssignmentsTable() {
   };
 
   const handleDelete = async (id) => {
+    setConfirmDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  const cancelDelete = () => {
+    setConfirmOpen(false);
+    setConfirmDeleteId(null);
+  };
+
+  const performDelete = async () => {
+    const id = confirmDeleteId;
     try {
       await deleteAssignment(id);
       setAssignments((prev) => prev.filter((a) => a._id !== id));
     } catch (error) {
       console.error("Delete error:", error);
+    } finally {
+      cancelDelete();
     }
   };
 
@@ -140,10 +194,23 @@ function AssignmentsTable() {
     );
   };
 
-  const handleCheckboxChange = (id, field) => {
-    setAssignments((prev) =>
-      prev.map((a) => (a._id === id ? { ...a, [field]: !a[field] } : a))
-    );
+  const handleCheckboxChange = async (id, field) => {
+    try {
+      let newValue;
+      console.log("Toggling checkbox for", id, field);
+      setAssignments((prev) =>
+        prev.map((a) => {
+          if (a._id !== id) return a;
+          newValue = !Boolean(a[field]);
+          return { ...a, [field]: newValue };
+        })
+      );
+
+      // persist change to backend
+      await updateAssignment(id, { [field]: newValue });
+    } catch (error) {
+      console.error("Checkbox update error:", error);
+    }
   };
 
   const exportToExcel = () => {
@@ -194,10 +261,10 @@ function AssignmentsTable() {
       <Box mt={2}>
         {loading ? (
           <>
-          <Skeleton variant="rectangular" height={100} />
-          <Skeleton variant="rectangular" height={100} />
-          <Skeleton variant="rectangular" height={100} />
-          <Skeleton variant="rectangular" height={100} />
+            <Skeleton variant="rectangular" height={100} />
+            <Skeleton variant="rectangular" height={100} />
+            <Skeleton variant="rectangular" height={100} />
+            <Skeleton variant="rectangular" height={100} />
           </>
         ) : (
           <AssignmentsList
@@ -222,6 +289,20 @@ function AssignmentsTable() {
           errors={errors}
           setErrors={setErrors}
         />
+        <Dialog open={confirmOpen} onClose={cancelDelete}>
+          <DialogTitle>Confirm delete</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this assignment? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelDelete}>Cancel</Button>
+            <Button color="error" onClick={performDelete} autoFocus>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </div>
   );
