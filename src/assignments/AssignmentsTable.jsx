@@ -137,6 +137,9 @@ function AssignmentsTable() {
         if (!validateForm()) return;
         const updated = await updateAssignment(editRow._id, {
           ...formData,
+          appSigned: Boolean(formData.appSigned),
+          iepSigned: Boolean(formData.iepSigned),
+          priority: Boolean(formData.priority),
           createdBy: user ? user.uid : "",
         });
         setAssignments((prev) =>
@@ -147,7 +150,13 @@ function AssignmentsTable() {
         if (!validateForm()) return;
         // Attach current user's UID so assignments are per-user
 
-        const payload = { ...formData, createdBy: user ? user.uid : undefined };
+        const payload = {
+          ...formData,
+          createdBy: user ? user.uid : undefined,
+          appSigned: Boolean(formData.appSigned),
+          iepSigned: Boolean(formData.iepSigned),
+          priority: Boolean(formData.priority),
+        };
         console.log("Creating assignment with payload:", payload);
         const newAssignment = await createAssignment(payload);
         setAssignments((prev) => [...prev, newAssignment]);
