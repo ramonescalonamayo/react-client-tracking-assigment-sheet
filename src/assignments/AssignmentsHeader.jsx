@@ -8,6 +8,7 @@ function AssignmentsHeader({
   handleOpen,
   exportToExcel,
   handleLogout,
+  handleResetPassword,
 }) {
   return (
     <>
@@ -29,9 +30,28 @@ function AssignmentsHeader({
           borderRadius: "10px",
           cursor: "pointer",
           fontSize: "16px",
+          marginRight: "10px",
         }}
       >
         Logout
+      </button>
+
+      <button
+        onClick={handleResetPassword}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "140px",
+          padding: "10px 20px",
+          backgroundColor: "#1976d2",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          cursor: "pointer",
+          fontSize: "16px",
+        }}
+      >
+        Reset Password
       </button>
 
       <Box mb={2} display="flex" justifyContent="center" gap={2} mt={2}>

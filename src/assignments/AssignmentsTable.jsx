@@ -19,10 +19,11 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Alert
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+import { signOut, onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebase";
 
 function AssignmentsTable() {
@@ -109,6 +110,30 @@ function AssignmentsTable() {
     }
   };
 
+  const handleOpenResetDialog = () => {
+    setResetMessage("");
+    setResetError("");
+    setOpenResetDialog(true);
+  };
+
+  const handleCloseResetDialog = () => {
+    setOpenResetDialog(false);
+  };
+
+  const handleSendResetEmail = async () => {
+    try {
+      if (auth.currentUser?.email) {
+        await sendPasswordResetEmail(auth, auth.currentUser.email);
+        setResetMessage("Password reset email sent! Check your inbox.");
+        setResetError("");
+        setTimeout(() => handleCloseResetDialog(), 2000);
+      }
+    } catch (e) {
+      setResetError("Error sending reset email.");
+      setResetMessage("");
+    }
+  };
+
   const handleOpen = (row = null) => {
     setEditRow(row);
     setFormData(
@@ -176,6 +201,9 @@ function AssignmentsTable() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [openResetDialog, setOpenResetDialog] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
 
   const cancelDelete = () => {
     setConfirmOpen(false);
@@ -283,15 +311,14 @@ function AssignmentsTable() {
     <div style={{ padding: "50px", textAlign: "center" }}>
       <h1>ASSIGNMENTS</h1>
 
-      <AssignmentsHeader
-        tabValue={tabValue}
-        handleTabChange={handleTabChange}
-        handleOpen={handleOpen}
-        exportToExcel={exportToExcel}
-        handleLogout={handleLogout}
-      />
-
-      <Box mt={2}>
+        <AssignmentsHeader
+          tabValue={tabValue}
+          handleTabChange={handleTabChange}
+          handleOpen={handleOpen}
+          exportToExcel={exportToExcel}
+          handleLogout={handleLogout}
+          handleResetPassword={handleOpenResetDialog}
+        />      <Box mt={2}>
         {loading ? (
           <>
             <Skeleton variant="rectangular" height={100} />
@@ -333,6 +360,29 @@ function AssignmentsTable() {
             <Button onClick={cancelDelete}>Cancel</Button>
             <Button color="error" onClick={performDelete} autoFocus>
               Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={openResetDialog} onClose={handleCloseResetDialog} fullWidth maxWidth="sm">
+          <DialogTitle>Reset Password</DialogTitle>
+          <DialogContent sx={{ paddingTop: "20px" }}>
+            <p>A password reset email will be sent to: <strong>{auth.currentUser?.email}</strong></p>
+            {resetMessage && (
+              <Alert severity="success" sx={{ marginTop: "10px" }}>
+                {resetMessage}
+              </Alert>
+            )}
+            {resetError && (
+              <Alert severity="error" sx={{ marginTop: "10px" }}>
+                {resetError}
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseResetDialog}>Cancel</Button>
+            <Button onClick={handleSendResetEmail} variant="contained">
+              Send Reset Email
             </Button>
           </DialogActions>
         </Dialog>
