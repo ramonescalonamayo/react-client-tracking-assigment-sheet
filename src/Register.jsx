@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import {
@@ -82,8 +82,25 @@ function Register() {
 
     try {
       setLoading(true);
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Send verification email and sign the user out so they verify before logging in
+      try {
+        await sendEmailVerification(user);
+      } catch (sendErr) {
+        console.warn("Failed to send verification email:", sendErr);
+      }
+
+      // Sign out immediately to require verification before using the app
+      try {
+        await signOut(auth);
+      } catch (sErr) {
+        console.warn("Failed to sign out after registration:", sErr);
+      }
+
+      // Redirect to login and indicate a verification email was sent
+      navigate("/login", { state: { verificationSent: email } });
     } catch (err) {
       // Firebase returns codes like 'auth/email-already-in-use'
       setError(err.message || "Error creating account");
@@ -226,10 +243,22 @@ function Register() {
           }}
         />
 
-        <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-start" }}>
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2 }}>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>
             {loading ? <CircularProgress size={20} color="inherit" /> : "Sign up"}
           </Button>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="body2">Already have an account?</Typography>
+            <Button
+              type="button"
+              onClick={() => navigate("/login")}
+              sx={{ p: 0 }}
+              variant="text"
+            >
+              Log in
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </Box>
